@@ -23,8 +23,8 @@ impl From<Packet> for Vec<u8> {
             .unwrap();
         wtr.write_i32::<LittleEndian>(packet.id).unwrap();
         wtr.write_i32::<LittleEndian>(packet.typ as i32).unwrap();
-        wtr.write(&packet.payload).unwrap();
-        wtr.write(&[0, 0]).unwrap();
+        wtr.write_all(&packet.payload).unwrap();
+        wtr.write_all(&[0, 0]).unwrap();
 
         wtr
     }
