@@ -1,0 +1,128 @@
+use std::path::Path;
+use std::{fs::File, io};
+
+use reqwest::Url;
+use serde::Deserialize;
+
+pub const VERSION_MANIFEST_URL: &'static str =
+    "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+
+/// Downloads a file from 'url' to the file at 'destination'
+///
+/// On success, the total number of bytes is returned
+pub fn download_file(url: &str, destination: impl AsRef<Path>) -> io::Result<u64> {
+    let mut response =
+        reqwest::blocking::get(url).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+    let mut out = File::create(destination.as_ref())?;
+
+    Ok(response
+        .copy_to(&mut out)
+        .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?)
+}
+
+#[derive(Debug, Deserialize, Eq, PartialEq, Copy, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum VersionType {
+    Snapshot,
+    Release,
+    OldBeta,
+    OldAlpha,
+}
+
+#[derive(Debug, Deserialize, Eq, PartialEq)]
+pub struct VersionInfo {
+    #[serde(rename(deserialize = "id"))]
+    name: String,
+    #[serde(rename(deserialize = "type"))]
+    typ: VersionType,
+    url: String,
+}
+
+impl VersionInfo {
+    pub fn jar_url(&self) -> Option<Url> {
+        let data: serde_json::Value = reqwest::blocking::get(&self.url).ok()?.json().ok()?;
+
+        Some(Url::parse(data.get("downloads")?.get("server")?.get("url")?.as_str()?).ok()?)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LatestVerions {
+    release: String,
+    snapshot: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct VersionManifest {
+    latest: LatestVerions,
+    versions: Vec<VersionInfo>,
+}
+
+impl VersionManifest {
+    pub fn find_version(&self, name: &str) -> Option<&VersionInfo> {
+        self.versions.iter().find(|info| info.name == name)
+    }
+
+    pub fn latest_release(&self) -> &str {
+        &self.latest.release
+    }
+
+    pub fn latest_snapshot(&self) -> &str {
+        &self.latest.snapshot
+    }
+}
+
+impl Default for VersionManifest {
+    fn default() -> Self {
+        reqwest::blocking::get(VERSION_MANIFEST_URL)
+            .expect("Could not download the version manifest")
+            .json()
+            .expect("Malformed response")
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{download_file, VersionManifest};
+
+    #[test]
+    fn test_version_manifest() {
+        let _manifest = VersionManifest::default();
+    }
+
+    #[test]
+    fn test_get_specific_version() {
+        let manifest = VersionManifest::default();
+
+        let info = manifest.find_version(manifest.latest_release());
+        assert!(info.is_some())
+    }
+
+    #[test]
+    fn test_get_version_jar_url() {
+        let manifest = VersionManifest::default();
+
+        let url = manifest
+            .find_version("20w48a")
+            .expect("Failed to find this version")
+            .jar_url()
+            .expect("Failed to find the version server jar");
+        assert_eq!(url.as_str(), "https://launcher.mojang.com/v1/objects/a14d24f89d5a4ec7521b91909caf4fee89c997f4/server.jar")
+    }
+
+    #[test]
+    fn test_download_server() {
+        let manifest = VersionManifest::default();
+
+        let url = manifest
+            .find_version(manifest.latest_snapshot())
+            .unwrap()
+            .jar_url()
+            .unwrap();
+        let result = download_file(url.as_str(), "server.jar");
+
+        assert!(result.is_ok());
+
+        std::fs::remove_file("server.jar").expect("Could not remove file");
+    }
+}
