@@ -7,3 +7,7 @@ This project is mostly for use with [debris](https://github.com/Inky-developer/d
 
 ### Rcon
 A simple, synchronous minecraft rcon implementation. An example console application can be found [here](https://github.com/Inky-developer/mc_utils/tree/master/examples/rcon.rs)
+
+### Server
+Functionality that allows to run and configure a server.jar file.
+This inlcudes access to the version manifest and downloading arbitrary server versions.
