@@ -2,7 +2,7 @@ use std::{cmp::Ordering, path::Path};
 use std::{fs::File, io};
 
 use chrono::DateTime;
-use reqwest::Url;
+use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Deserializer};
 
 pub const VERSION_MANIFEST_URL: &'static str =
@@ -11,7 +11,7 @@ pub const VERSION_MANIFEST_URL: &'static str =
 /// Downloads a file from 'url' to the file at 'destination'
 ///
 /// On success, the total number of bytes is returned
-pub fn download_file(url: &str, destination: impl AsRef<Path>) -> io::Result<u64> {
+pub fn download_file<T: IntoUrl, U: AsRef<Path>>(url: T, destination: U) -> io::Result<u64> {
     let mut response =
         reqwest::blocking::get(url).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
     let mut out = File::create(destination.as_ref())?;
@@ -89,7 +89,7 @@ pub struct VersionManifest {
 
 impl VersionManifest {
     /// Searches linearly for a version with 'name'
-    /// 
+    ///
     /// Starts at the latest version
     pub fn find_version(&self, name: &str) -> Option<&VersionInfo> {
         self.versions.iter().find(|info| info.name == name)
@@ -111,6 +111,7 @@ impl Default for VersionManifest {
             .json()
             .expect("Malformed response");
 
+        // Sorts in descending order
         manifest.versions.sort_unstable_by(|a, b| b.cmp(a));
 
         manifest

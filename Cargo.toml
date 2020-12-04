@@ -1,11 +1,6 @@
-[package]
-authors = ["Inky <47245667+Inky-developer@users.noreply.github.com>"]
-edition = "2018"
-name = "mc_utils"
-version = "0.1.0"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-rcon = {path = "rcon"}
-server = {path = "server"}
+[workspace]
+members = [
+  "mc_utils",
+  "mc_utils/rcon",
+  "mc_utils/server",
+]
