@@ -1,8 +1,9 @@
-use std::path::Path;
+use std::{cmp::Ordering, path::Path};
 use std::{fs::File, io};
 
+use chrono::DateTime;
 use reqwest::Url;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 pub const VERSION_MANIFEST_URL: &'static str =
     "https://launchermeta.mojang.com/mc/game/version_manifest.json";
@@ -29,13 +30,19 @@ pub enum VersionType {
     OldAlpha,
 }
 
-#[derive(Debug, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq)]
 pub struct VersionInfo {
     #[serde(rename(deserialize = "id"))]
     name: String,
     #[serde(rename(deserialize = "type"))]
     typ: VersionType,
     url: String,
+    /// The release time is used to uniquely identify a version
+    #[serde(
+        rename(deserialize = "releaseTime"),
+        deserialize_with = "deserialize_time"
+    )]
+    release_time: i64,
 }
 
 impl VersionInfo {
@@ -43,6 +50,27 @@ impl VersionInfo {
         let data: serde_json::Value = reqwest::blocking::get(&self.url).ok()?.json().ok()?;
 
         Some(Url::parse(data.get("downloads")?.get("server")?.get("url")?.as_str()?).ok()?)
+    }
+}
+
+// Order and equality of Versions depend on their release time.
+// A "greater" version was release later
+
+impl PartialEq for VersionInfo {
+    fn eq(&self, other: &VersionInfo) -> bool {
+        self.release_time == other.release_time
+    }
+}
+
+impl PartialOrd for VersionInfo {
+    fn partial_cmp(&self, other: &VersionInfo) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for VersionInfo {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.release_time.cmp(&other.release_time)
     }
 }
 
@@ -55,10 +83,14 @@ pub struct LatestVerions {
 #[derive(Debug, Deserialize)]
 pub struct VersionManifest {
     latest: LatestVerions,
+    /// A sorted vector of versions, the latest version is at index 0
     versions: Vec<VersionInfo>,
 }
 
 impl VersionManifest {
+    /// Searches linearly for a version with 'name'
+    /// 
+    /// Starts at the latest version
     pub fn find_version(&self, name: &str) -> Option<&VersionInfo> {
         self.versions.iter().find(|info| info.name == name)
     }
@@ -74,11 +106,27 @@ impl VersionManifest {
 
 impl Default for VersionManifest {
     fn default() -> Self {
-        reqwest::blocking::get(VERSION_MANIFEST_URL)
+        let mut manifest: VersionManifest = reqwest::blocking::get(VERSION_MANIFEST_URL)
             .expect("Could not download the version manifest")
             .json()
-            .expect("Malformed response")
+            .expect("Malformed response");
+
+        manifest.versions.sort_unstable_by(|a, b| b.cmp(a));
+
+        manifest
     }
+}
+
+fn deserialize_time<'de, D>(de: D) -> Result<i64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de::Error;
+
+    let time_str = String::deserialize(de)?;
+    Ok(DateTime::parse_from_rfc3339(&time_str)
+        .map_err(|_| D::Error::custom("Could not parse timestamp"))?
+        .timestamp())
 }
 
 #[cfg(test)]
