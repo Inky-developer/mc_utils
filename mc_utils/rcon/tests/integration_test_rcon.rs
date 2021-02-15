@@ -15,7 +15,7 @@ fn setup() -> (TempDir, ServerInstance, McRcon) {
         .jar_url()
         .expect("Got not find jar url");
 
-    download_file(latest_version_url, dir.path().join("server.jar"))
+    download_file(&latest_version_url, dir.path().join("server.jar"))
         .expect("Could not download server");
 
     let server = ServerInstance::new(dir.path())

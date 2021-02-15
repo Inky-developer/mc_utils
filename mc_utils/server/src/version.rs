@@ -2,7 +2,7 @@ use std::{cmp::Ordering, path::Path};
 use std::{fs::File, io};
 
 use chrono::DateTime;
-use reqwest::{IntoUrl, Url};
+use io::copy;
 use serde::{Deserialize, Deserializer};
 
 pub const VERSION_MANIFEST_URL: &'static str =
@@ -11,14 +11,15 @@ pub const VERSION_MANIFEST_URL: &'static str =
 /// Downloads a file from 'url' to the file at 'destination'
 ///
 /// On success, the total number of bytes is returned
-pub fn download_file<T: IntoUrl, U: AsRef<Path>>(url: T, destination: U) -> io::Result<u64> {
-    let mut response =
-        reqwest::blocking::get(url).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+pub fn download_file<U: AsRef<Path>>(url: &str, destination: U) -> io::Result<u64> {
+    let mut response = ureq::get(url)
+        .call()
+        .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
+        .into_reader();
+
     let mut out = File::create(destination.as_ref())?;
 
-    Ok(response
-        .copy_to(&mut out)
-        .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?)
+    copy(&mut response, &mut out)
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq, Copy, Clone)]
@@ -46,10 +47,15 @@ pub struct VersionInfo {
 }
 
 impl VersionInfo {
-    pub fn jar_url(&self) -> Option<Url> {
-        let data: serde_json::Value = reqwest::blocking::get(&self.url).ok()?.json().ok()?;
+    pub fn jar_url(&self) -> Option<String> {
+        let data: serde_json::Value = ureq::get(&self.url).call().ok()?.into_json().ok()?;
 
-        Some(Url::parse(data.get("downloads")?.get("server")?.get("url")?.as_str()?).ok()?)
+        Some(
+            data.get("downloads")?
+                .get("server")?
+                .get("url")?
+                .to_string(),
+        )
     }
 }
 
@@ -106,9 +112,10 @@ impl VersionManifest {
 
 impl Default for VersionManifest {
     fn default() -> Self {
-        let mut manifest: VersionManifest = reqwest::blocking::get(VERSION_MANIFEST_URL)
+        let mut manifest: VersionManifest = ureq::get(VERSION_MANIFEST_URL)
+            .call()
             .expect("Could not download the version manifest")
-            .json()
+            .into_json()
             .expect("Malformed response");
 
         // Sorts in descending order

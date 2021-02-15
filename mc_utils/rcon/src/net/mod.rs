@@ -41,7 +41,6 @@ impl McRcon {
     fn send(&mut self, data: Packet) -> Result<PacketResponse> {
         let deserialized: Vec<u8> = data.into();
         self.stream.write_all(&deserialized)?;
-
         PacketResponse::from_reader(&mut self.stream)
     }
 }

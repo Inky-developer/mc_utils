@@ -23,7 +23,7 @@ impl PacketResponse {
         let id = buffer.read_i32::<LittleEndian>()?;
         let typ = buffer.read_i32::<LittleEndian>()?;
 
-        let string_length = buffer.get_ref().len() - buffer.position() as usize - 2; // one bytes used to end the string and one byte used for padding
+        let string_length = buffer.get_ref().len() - buffer.position() as usize - 2; // one byte used to end the string and one byte used for padding
         let mut string_buf = vec![0; string_length];
 
         buffer.read_exact(&mut string_buf)?;
@@ -38,7 +38,6 @@ impl PacketResponse {
         if typ == 2 && id == -1 {
             return Err(Error::LoginFailed);
         }
-
         Ok(PacketResponse {
             payload: string,
             packet_id: id,
