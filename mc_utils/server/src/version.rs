@@ -54,7 +54,8 @@ impl VersionInfo {
             data.get("downloads")?
                 .get("server")?
                 .get("url")?
-                .to_string(),
+                .as_str()?
+                .to_owned(),
         )
     }
 }
