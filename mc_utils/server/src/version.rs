@@ -5,7 +5,7 @@ use chrono::DateTime;
 use io::copy;
 use serde::{Deserialize, Deserializer};
 
-pub const VERSION_MANIFEST_URL: &'static str =
+pub const VERSION_MANIFEST_URL: &str =
     "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
 /// Downloads a file from 'url' to the file at 'destination'

@@ -18,7 +18,7 @@ fn setup() -> (TempDir, ServerInstance, McRcon) {
     download_file(&latest_version_url, dir.path().join("server.jar"))
         .expect("Could not download server");
 
-    let server = ServerInstance::new(dir.path())
+    let server = ServerInstance::builder(dir.path())
         .property("enable-rcon", "true")
         .property("rcon.password", RCON_PASSWORD)
         .property("rcon.port", RCON_PORT.to_string())

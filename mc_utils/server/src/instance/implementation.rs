@@ -10,9 +10,9 @@ use std::{fs::File, path::PathBuf};
 
 use super::{run_server, InstanceError, Result};
 
-pub const SERVER_PROPERTIES: &'static str = "server.properties";
-pub const EULA_TXT: &'static str = "eula.txt";
-pub const DEFAULT_WORLD_NAME: &'static str = "world";
+pub const SERVER_PROPERTIES: &str = "server.properties";
+pub const EULA_TXT: &str = "eula.txt";
+pub const DEFAULT_WORLD_NAME: &str = "world";
 
 /// A running minecraft server
 ///
@@ -29,7 +29,7 @@ pub struct ServerInstance {
 
 impl ServerInstance {
     /// Creates a new server instance builder at 'dir'
-    pub fn new(dir: impl Into<PathBuf>) -> ServerBuilder {
+    pub fn builder(dir: impl Into<PathBuf>) -> ServerBuilder {
         ServerBuilder::new(dir)
     }
 
@@ -77,7 +77,7 @@ impl ServerInstance {
             stdin_buf.write_all(command.trim_end().as_bytes())?;
 
             // Make sure to write a newline, but only if it is not in command
-            if !command.ends_with("\n") {
+            if !command.ends_with('\n') {
                 stdin_buf.write_all("\n".as_bytes())?;
             }
         }
@@ -126,7 +126,7 @@ impl ServerInstance {
         // Write the eula.txt file
         {
             let mut eula_file = File::create(builder.dir.join(EULA_TXT))?;
-            eula_file.write("eula=true".as_bytes())?;
+            eula_file.write_all("eula=true".as_bytes())?;
         }
 
         // And finally start the server
@@ -152,7 +152,8 @@ impl ServerInstance {
             }
         }
 
-        process.stdout.replace(buffer.into_inner());
+        // For some reason the next line breaks the server when using mcrcon
+        // process.stdout.replace(buffer.into_inner());
 
         let instance = ServerInstance {
             dir: builder.dir,

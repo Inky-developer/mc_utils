@@ -30,7 +30,7 @@ pub fn minecraft_dir() -> PathBuf {
 
     let mut user_home = dirs::home_dir().expect("Could not retrieve home directory");
     if cfg!(windows) {
-        let mut dir = env::var("APPDATA").map_or(user_home, |string| PathBuf::from(string));
+        let mut dir = env::var("APPDATA").map_or(user_home, PathBuf::from);
         dir.push(".minecraft/");
         dir
     } else if cfg!(macos) {
