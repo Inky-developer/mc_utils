@@ -14,6 +14,7 @@ pub fn run_server(path: impl AsRef<Path>, args: &[&str]) -> std::io::Result<Chil
         .arg(path)
         .args(args)
         .current_dir(dir)
+        .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
 }
