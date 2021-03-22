@@ -9,7 +9,7 @@ thread_local! {
 
 /// Checks whether the java command is available on this system
 pub fn has_java() -> bool {
-    match Command::new("java").arg("-version").stdout(Stdio::piped()).spawn() {
+    match Command::new("java").arg("-version").stdout(Stdio::null()).spawn() {
         Ok(mut child) => match child.wait() {
             Ok(status) => status.success(),
             _ => false,
