@@ -169,7 +169,12 @@ impl ServerInstance {
 
 impl Drop for ServerInstance {
     fn drop(&mut self) {
-        let _result = self.process.kill();
+        match self.try_stop() {
+            Ok(true) => (),
+            _ => {
+                self.process.kill().ok();
+            }
+        }
     }
 }
 
