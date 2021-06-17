@@ -3,7 +3,7 @@ use server::{download_file, ServerInstance, VersionManifest};
 use tempfile::{tempdir, TempDir};
 
 pub const RCON_PORT: u16 = 25575;
-pub const RCON_PASSWORD: &'static str = "1234";
+pub const RCON_PASSWORD: &str = "1234";
 
 fn setup() -> (TempDir, ServerInstance, McRcon) {
     let dir = tempdir().expect("Could not create a temporary directory");

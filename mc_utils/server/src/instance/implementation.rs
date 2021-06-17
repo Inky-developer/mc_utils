@@ -100,7 +100,7 @@ impl ServerInstance {
                 if !status_code.success() {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
-                        "Server did not exit successfully",
+                        format!("Server did not exit successfully: {}", status_code),
                     )
                     .into());
                 }
