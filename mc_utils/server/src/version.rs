@@ -34,16 +34,16 @@ pub enum VersionType {
 #[derive(Debug, Deserialize, Eq)]
 pub struct VersionInfo {
     #[serde(rename(deserialize = "id"))]
-    name: String,
+    pub name: String,
     #[serde(rename(deserialize = "type"))]
-    typ: VersionType,
-    url: String,
+    pub typ: VersionType,
+    pub url: String,
     /// The release time is used to uniquely identify a version
     #[serde(
         rename(deserialize = "releaseTime"),
         deserialize_with = "deserialize_time"
     )]
-    release_time: i64,
+    pub release_time: i64,
 }
 
 impl VersionInfo {
@@ -82,14 +82,14 @@ impl Ord for VersionInfo {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct LatestVerions {
-    release: String,
-    snapshot: String,
+pub struct LatestVersions {
+    pub release: String,
+    pub snapshot: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct VersionManifest {
-    latest: LatestVerions,
+    latest: LatestVersions,
     /// A sorted vector of versions, the latest version is at index 0
     versions: Vec<VersionInfo>,
 }
@@ -164,7 +164,7 @@ mod test {
             .expect("Failed to find this version")
             .jar_url()
             .expect("Failed to find the version server jar");
-        assert_eq!(url.as_str(), "https://launcher.mojang.com/v1/objects/a14d24f89d5a4ec7521b91909caf4fee89c997f4/server.jar")
+        assert_eq!(url.as_str(), "https://piston-data.mojang.com/v1/objects/a14d24f89d5a4ec7521b91909caf4fee89c997f4/server.jar")
     }
 
     #[test]

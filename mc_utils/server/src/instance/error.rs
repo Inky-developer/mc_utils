@@ -24,7 +24,7 @@ impl From<java_properties::PropertiesError> for InstanceError {
 impl Display for InstanceError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InstanceError::Other(msg) => f.write_str(&msg),
+            InstanceError::Other(msg) => f.write_str(msg),
             InstanceError::IoError(error) => error.fmt(f),
             InstanceError::DeserializationError(error) => error.fmt(f),
         }

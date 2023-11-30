@@ -26,7 +26,7 @@ fn download_server() -> PathBuf {
 
     let server_jar = temp_dir().join("minecraft_server/server.jar");
     create_dir(server_jar.parent().unwrap()).ok();
-    download_file(jar_url, server_jar.clone()).expect("Could not download server");
+    download_file(&jar_url, server_jar.clone()).expect("Could not download server");
     server_jar
 }
 
@@ -50,5 +50,5 @@ fn main() {
     server
         .try_stop()
         .expect("Could not gracefully stop the server");
-    remove_dir_all(server.dir()).expect("Could not remove the temporary directory");
+    remove_dir_all(&server.dir).expect("Could not remove the temporary directory");
 }

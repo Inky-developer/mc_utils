@@ -1,3 +1,4 @@
+use std::time::Duration;
 use std::{
     collections::HashMap,
     fs::OpenOptions,
@@ -20,10 +21,10 @@ pub const DEFAULT_WORLD_NAME: &str = "world";
 /// It is advised to 'stop()' the server before dropping it
 #[derive(Debug)]
 pub struct ServerInstance {
-    dir: PathBuf,
-    jar: PathBuf,
-    world_name: String,
-    properties: HashMap<String, String>,
+    pub dir: PathBuf,
+    pub jar: PathBuf,
+    pub world_name: String,
+    pub properties: HashMap<String, String>,
     process: Child,
 }
 
@@ -58,10 +59,6 @@ impl ServerInstance {
 
     pub fn process(&self) -> &Child {
         &self.process
-    }
-
-    pub fn dir(&self) -> &PathBuf {
-        &self.dir
     }
 
     /// Executes a command at the server
@@ -162,6 +159,9 @@ impl ServerInstance {
             properties,
             process,
         };
+
+        // wait a bit to be sure that rcon can be accessed
+        std::thread::sleep(Duration::from_secs(1));
 
         Ok(instance)
     }
