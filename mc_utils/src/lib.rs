@@ -1,5 +1,6 @@
 use std::{env, path::PathBuf};
 
+pub use data_generator;
 pub use rcon;
 pub use server;
 

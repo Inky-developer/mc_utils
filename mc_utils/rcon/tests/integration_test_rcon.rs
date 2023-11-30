@@ -13,7 +13,7 @@ fn setup() -> (TempDir, ServerInstance, McRcon) {
         .find_version(version_manifest.latest_snapshot())
         .expect("Could not find latest version");
 
-    download_server(&latest_version, dir.path().join("server.jar"));
+    download_server(&latest_version, dir.path().join("server.jar")).unwrap();
 
     let server = ServerInstance::builder(dir.path())
         .property("enable-rcon", "true")

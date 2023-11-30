@@ -8,5 +8,6 @@ version = "0.1.0"
 
 [dependencies]
 dirs = "5.0"
-rcon = {path = "rcon"}
-server = {path = "server"}
+rcon = { path = "rcon" }
+server = { path = "server" }
+data_generator = { path = "data_generator" }

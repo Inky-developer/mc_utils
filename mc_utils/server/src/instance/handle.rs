@@ -22,7 +22,11 @@ pub fn has_java() -> bool {
     }
 }
 
-pub fn run_server(path: impl AsRef<Path>, args: &[&str]) -> std::io::Result<Child> {
+pub fn run_server(
+    path: impl AsRef<Path>,
+    args: &[&str],
+    java_args: &[&str],
+) -> std::io::Result<Child> {
     HAS_JAVA.with(|java| {
         if !java {
             Err(std::io::Error::new(
@@ -40,6 +44,7 @@ pub fn run_server(path: impl AsRef<Path>, args: &[&str]) -> std::io::Result<Chil
         .expect("Could not get parent dir of this path");
 
     Command::new("java")
+        .args(java_args)
         .arg("-jar")
         .arg(path)
         .args(args)

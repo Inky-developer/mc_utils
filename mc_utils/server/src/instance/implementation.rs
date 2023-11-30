@@ -92,7 +92,7 @@ impl ServerInstance {
 
             // If the properties file does not exist yet, the server has to generate them
             if !properties_path.exists() {
-                let mut proc = run_server(&builder.server_path, &["--initSettings"])?;
+                let mut proc = run_server(&builder.server_path, &["--initSettings"], &[])?;
                 let status_code = proc.wait()?;
                 if !status_code.success() {
                     return Err(std::io::Error::new(
@@ -130,6 +130,7 @@ impl ServerInstance {
         let mut process = run_server(
             &builder.server_path,
             &["--nogui", "--world", &builder.world_name],
+            &[],
         )?;
 
         // Wait for the server to load

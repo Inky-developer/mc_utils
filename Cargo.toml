@@ -1,6 +1,9 @@
 [workspace]
+resolver = "2"
+
 members = [
-  "mc_utils",
-  "mc_utils/rcon",
-  "mc_utils/server",
+    "mc_utils",
+    "mc_utils/rcon",
+    "mc_utils/server",
+    "mc_utils/data_generator"
 ]

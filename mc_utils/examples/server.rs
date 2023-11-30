@@ -25,7 +25,7 @@ fn download_latest_snapshot_server() -> PathBuf {
 
     let server_jar = temp_dir().join("minecraft_server/server.jar");
     create_dir(server_jar.parent().unwrap()).ok();
-    download_server(&latest_version, &server_jar);
+    download_server(&latest_version, &server_jar).unwrap();
     server_jar
 }
 

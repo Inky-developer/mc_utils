@@ -24,9 +24,12 @@ fn download_file<U: AsRef<Path>>(url: &str, destination: U) -> io::Result<u64> {
 
 /// Downloads a minecraft server of the given version to `destination`
 /// Returns the location of the server jar
-pub fn download_server(version: &VersionInfo, destination: impl AsRef<Path>) {
-    let jar_url = version.jar_url().expect("Could not find url");
-    download_file(&jar_url, destination).expect("Could not download server");
+pub fn download_server(version: &VersionInfo, destination: impl AsRef<Path>) -> io::Result<()> {
+    let jar_url = version.jar_url().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::NotFound, "Could not find the given version")
+    })?;
+    download_file(&jar_url, destination)?;
+    Ok(())
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq, Copy, Clone)]
