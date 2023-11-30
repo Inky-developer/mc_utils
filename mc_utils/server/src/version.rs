@@ -11,7 +11,7 @@ pub const VERSION_MANIFEST_URL: &str =
 /// Downloads a file from 'url' to the file at 'destination'
 ///
 /// On success, the total number of bytes is returned
-pub fn download_file<U: AsRef<Path>>(url: &str, destination: U) -> io::Result<u64> {
+fn download_file<U: AsRef<Path>>(url: &str, destination: U) -> io::Result<u64> {
     let mut response = ureq::get(url)
         .call()
         .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
@@ -20,6 +20,13 @@ pub fn download_file<U: AsRef<Path>>(url: &str, destination: U) -> io::Result<u6
     let mut out = File::create(destination.as_ref())?;
 
     copy(&mut response, &mut out)
+}
+
+/// Downloads a minecraft server of the given version to `destination`
+/// Returns the location of the server jar
+pub fn download_server(version: &VersionInfo, destination: impl AsRef<Path>) {
+    let jar_url = version.jar_url().expect("Could not find url");
+    download_file(&jar_url, destination).expect("Could not download server");
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq, Copy, Clone)]

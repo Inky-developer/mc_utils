@@ -2,7 +2,7 @@
 
 use std::{env::temp_dir, fs::create_dir, fs::remove_dir_all, path::PathBuf};
 
-use server::{download_file, ServerInstance, VersionManifest};
+use server::{download_server, ServerInstance, VersionManifest};
 
 fn readline(prompt: &str) -> String {
     use std::io::Write;
@@ -17,21 +17,20 @@ fn readline(prompt: &str) -> String {
     line.trim_end().to_string()
 }
 
-fn download_server() -> PathBuf {
+fn download_latest_snapshot_server() -> PathBuf {
     let version_manifest = VersionManifest::default();
     let latest_version = version_manifest
         .find_version(version_manifest.latest_snapshot())
         .expect("Could not find latest version");
-    let jar_url = latest_version.jar_url().expect("Could not find url");
 
     let server_jar = temp_dir().join("minecraft_server/server.jar");
     create_dir(server_jar.parent().unwrap()).ok();
-    download_file(&jar_url, server_jar.clone()).expect("Could not download server");
+    download_server(&latest_version, &server_jar);
     server_jar
 }
 
 fn main() {
-    let server_jar = download_server();
+    let server_jar = download_latest_snapshot_server();
     println!("Downloaded server to: {}", server_jar.to_str().unwrap());
 
     let mut server = ServerInstance::with_jar(server_jar)

@@ -1,5 +1,5 @@
 use rcon::McRcon;
-use server::{download_file, ServerInstance, VersionManifest};
+use server::{download_server, ServerInstance, VersionManifest};
 use tempfile::{tempdir, TempDir};
 
 pub const RCON_PORT: u16 = 25575;
@@ -9,14 +9,11 @@ fn setup() -> (TempDir, ServerInstance, McRcon) {
     let dir = tempdir().expect("Could not create a temporary directory");
 
     let version_manifest = VersionManifest::default();
-    let latest_version_url = version_manifest
+    let latest_version = version_manifest
         .find_version(version_manifest.latest_snapshot())
-        .expect("Could not find latest version")
-        .jar_url()
-        .expect("Got not find jar url");
+        .expect("Could not find latest version");
 
-    download_file(&latest_version_url, dir.path().join("server.jar"))
-        .expect("Could not download server");
+    download_server(&latest_version, dir.path().join("server.jar"));
 
     let server = ServerInstance::builder(dir.path())
         .property("enable-rcon", "true")
